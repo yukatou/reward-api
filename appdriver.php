@@ -24,7 +24,7 @@ if($ret != true){
   exit;
 }
 
-$count= getRecCount('t_app_driver',$identifier,$achieve_id,1);
+$count= getRecCount('t_app_driver',$user_id,$achieve_id,1);
 //--------------------------------------
 //アイテム付与済、アドウェイズ指定の0を返却
 //--------------------------------------
@@ -44,7 +44,8 @@ try {
   //--------------------------------------
   $sql = <<<_SQL
     INSERT INTO t_app_driver (
-      identifier
+      user_id
+      ,identifier
       ,achieve_id
       ,accepted_time
       ,campaign_name
@@ -55,7 +56,8 @@ try {
       ,created_at
     )
     VALUES	 (
-      :identifier
+      :user_id
+      ,:identifier
       ,:achieve_id
       ,:accepted_time
       ,:campaign_name
@@ -69,6 +71,7 @@ try {
     ;
 
   $q = DB::query($sql)
+    ->bind('user_id', $user_id)
     ->bind('identifier', $identifier)
     ->bind('achieve_id', $achieve_id)
     ->bind('accepted_time', $accepted_time)
@@ -96,7 +99,7 @@ try {
   // ステータス更新(t_app_driver)
   //--------------------------------------
   $Driver = Model_AppDriver_Driver::query()
-    ->where('identifier', $identifier)
+    ->where('user_id', $user_id)
     ->where('achieve_id', $achieve_id)
     ->get_one();
   $Driver->status = 1;
@@ -173,12 +176,12 @@ function get_item($user_id,$reward_point = 0) {
  * レコード件数の確認
  * @return レコード数
  */
-function getRecCount($tablename,$key1,$key2,$status) {
+function getRecCount($tablename,$user_id,$archive_id,$status) {
 
   $q = null;
   $q = \DB::select(\DB::expr('COUNT(*) as cnt'))->from($tablename);
-  $q->where('identifier', '=', $key1);
-  $q->where('achieve_id', '=', $key2);
+  $q->where('user_id', '=', $user_id);
+  $q->where('achieve_id', '=', $archive_id);
   if($status == true){
     $q->where('status', '=', $status);
   }

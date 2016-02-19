@@ -2,8 +2,8 @@
 
 // キーとする項目以外はデフォルト空とする
 $type				=	Input::get('type');		// １日１回: top ビューア: read
-$user_key   = Input::get('user_key') //ユーザの紹介コードが送られてくる
-  $transaction_id	=	Input::get('transaction_id');
+$user_code   = Input::get('user_code') //ユーザの紹介コードが送られてくる
+$transaction_id	=	Input::get('transaction_id');
 $currency		=	Input::get('currency'); // 特に使わない
 $amount			=	Input::get('amount'); // ハート数
 $dateval		=	date("c");
@@ -19,13 +19,13 @@ if(validate_remote_address() == false){
 }
 
 // ユーザ認証
-$ret = validate_user($user_key, $user_id);
+$ret = validate_user($user_code, $user_id);
 if($ret != true){
   Response::forge('', 400)->send(true);
   exit;
 }
 
-$count	= getRecCount('t_adstir', $user_key, $transactions_id, 1);
+$count	= getRecCount('t_adstir', $user_id, $transactions_id, 1);
 
 //--------------------------------------
 // アイテム付与済、CARward指定のOKを返却
@@ -60,7 +60,8 @@ try {
 
   $sql = <<<_SQL
     INSERT INTO t_adstir (
-      user_id
+      user_id,
+      :user_code
       ,type
       ,transaction_id
       ,amount
@@ -69,6 +70,7 @@ try {
     )
     VALUES	 (
       :user_id
+      ,:user_code
       ,:type
       ,:transaction_id
       ,:amount
@@ -80,6 +82,7 @@ try {
 
   $q = DB::query($sql)
     ->bind('user_id', $user_id)
+    ->bind('user_code', $user_code)
     ->bind('type', $type)
     ->bind('transaction_id', $transaction_id)
     ->bind('amount', $amount)
@@ -89,37 +92,37 @@ try {
     ;
 
   //--------------------------------------
-  //④ アイテム付与（回復BOX赤固定）
+  // アイテム付与（回復BOX赤固定）
   //--------------------------------------
   $ret = get_item($user_id,$point);
 
-  if($ret != true){
+  if($ret != true) {
     DB::rollback_transaction();
     Response::forge('', 400)->send(true);
     exit;
-}
+  }
 
-//--------------------------------------
-// １日１回の動画視聴を更新
-//--------------------------------------
-if ($type === 'top') {
-  //
-  // app_usersのwatch_ad_dateに日付をいれる処理
-  //
-}
+  //--------------------------------------
+  // １日１回の動画視聴を更新
+  //--------------------------------------
+  if ($type === 'top') {
+    //
+    // app_usersのwatch_ad_dateに日付をいれる処理
+    //
+  }
 
-//--------------------------------------
-//⑤ ステータス更新(t_adsir)
-//--------------------------------------
-$adstir = Model_Adstir::query()
-  ->where('user_id', $user_id)
-  ->where('transaction_id', $transaction_id)
-  ->get_one();
-$Careward->status = 1;
-$Careward->modified = date('c');
-$Careward->save();
+  //--------------------------------------
+  // ステータス更新(t_adsir)
+  //--------------------------------------
+  $adstir = Model_Adstir::query()
+    ->where('user_id', $user_id)
+    ->where('transaction_id', $transaction_id)
+    ->get_one();
+  $Careward->status = 1;
+  $Careward->modified = date('c');
+  $Careward->save();
 
-DB::commit_transaction();
+  DB::commit_transaction();
 
 } catch (Exception $e) {
   Log::error('[Exception]:'.$e->getLine() . ":" . $e->getMessage());
@@ -158,16 +161,18 @@ return $user->id;
  * ユーザ認証を行う
  * @return boolean|string
  */
-function validate_user($identifier, &$user_id) {
-  $user_id = authUser($identifier);
+function validate_user($user_code, &$user_id) {
+  $user_id = authUser($user_code);
   if(!$user_id) {
     return false;
 }
 
 $user = Model_Client::find($user_id);
+
 if(!$user) {
   return false;
 }
+
 return true;
 }
 

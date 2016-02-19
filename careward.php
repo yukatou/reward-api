@@ -31,7 +31,7 @@ if($ret != true){
 }
 
 // ユーザーID、広告ID、	成果発生日時、成果地点IDがキーとなる
-$count	= getRecCount('t_careward', $uid, $cid, $action_date, $pid, 1);
+$count	= getRecCount('t_careward', $user_id, $cid, $action_date, $pid, 1);
 
 //--------------------------------------
 // アイテム付与済、CARward指定のOKを返却
@@ -52,7 +52,8 @@ try {
 
   $sql = <<<_SQL
     INSERT INTO t_careward (
-      uid
+      user_id
+      ,uid
       ,cid
       ,cname
       ,carrier
@@ -68,7 +69,8 @@ try {
       ,created_at
     )
     VALUES	 (
-      :uid
+      :user_id
+      ,:uid
       ,:cid
       ,:cname
       ,:carrier
@@ -87,6 +89,7 @@ try {
     ;
 
   $q = DB::query($sql)
+    ->bind('user_id', $user_id)
     ->bind('uid', $uid)
     ->bind('cid', $cid)
     ->bind('cname', $cname)
@@ -169,7 +172,7 @@ function _authUser($uuid) {
  * @return boolean|string
  */
 function validate_user($identifier, &$user_id) {
-  $user_id = $this->_authUser($identifier);
+  $user_id = authUser($identifier);
   if(!$user_id) {
     return false;
   }
@@ -200,14 +203,14 @@ function get_item($user_id, $reward_point = 0) {
  * レコード件数の確認
  * @return レコード数
  */
-function getRecCount($tablename, $key1, $key2, $key3, $key4, $status) {
+function getRecCount($tablename, $user_id, $cid, $action_date, $pid, $status) {
 
   $q = null;
   $q = \DB::select(\DB::expr('COUNT(*) as cnt'))->from($tablename);
-  $q->where('uid', '=', $key1);
-  $q->where('cid', '=', $key2);
-  $q->where('action_date', '=', $key3);
-  $q->where('pid', '=', $key4);
+  $q->where('user_id', '=', $user_id);
+  $q->where('cid', '=', $cid);
+  $q->where('action_date', '=', $action_date);
+  $q->where('pid', '=', $pid);
   if($status == true){
     $q->where('status', '=', $status);
   }

@@ -2,7 +2,7 @@
 
 // キーとする項目以外はデフォルト空とする
 $type				=	Input::get('type');		// １日１回: top ビューア: read
-$user_code   = Input::get('user_code') //ユーザの紹介コードが送られてくる
+$uid        = Input::get('uid') //ユーザの紹介コードが送られてくる
 $transaction_id	=	Input::get('transaction_id');
 $currency		=	Input::get('currency'); // 特に使わない
 $amount			=	Input::get('amount'); // ハート数
@@ -19,7 +19,7 @@ if(validate_remote_address() == false){
 }
 
 // ユーザ認証
-$ret = validate_user($user_code, $user_id);
+$ret = validate_user($uid, $user_id);
 if($ret != true){
   Response::forge('', 400)->send(true);
   exit;
@@ -60,8 +60,8 @@ try {
 
   $sql = <<<_SQL
     INSERT INTO t_adstir (
-      user_id,
-      :user_code
+      user_id
+      ,uid
       ,type
       ,transaction_id
       ,amount
@@ -70,7 +70,7 @@ try {
     )
     VALUES	 (
       :user_id
-      ,:user_code
+      ,:uid
       ,:type
       ,:transaction_id
       ,:amount
@@ -82,7 +82,7 @@ try {
 
   $q = DB::query($sql)
     ->bind('user_id', $user_id)
-    ->bind('user_code', $user_code)
+    ->bind('uid', $uid)
     ->bind('type', $type)
     ->bind('transaction_id', $transaction_id)
     ->bind('amount', $amount)
@@ -118,9 +118,9 @@ try {
     ->where('user_id', $user_id)
     ->where('transaction_id', $transaction_id)
     ->get_one();
-  $Careward->status = 1;
-  $Careward->modified = date('c');
-  $Careward->save();
+  $adstir->status = 1;
+  $adstir->modified = date('c');
+  $adstir->save();
 
   DB::commit_transaction();
 
@@ -147,13 +147,13 @@ function authUser($uuid) {
 
   if(!$uuid) {
     return false;
-}
-$user = Model_Client::query()->where('introduce_code', $uuid)->get_one();
-if(!$user) {
-  return false;
-}
+  }
+  $user = Model_Client::query()->where('introduce_code', $uuid)->get_one();
+  if(!$user) {
+    return false;
+  }
 
-return $user->id;
+  return $user->id;
 }
 
 
@@ -161,19 +161,19 @@ return $user->id;
  * ユーザ認証を行う
  * @return boolean|string
  */
-function validate_user($user_code, &$user_id) {
-  $user_id = authUser($user_code);
+function validate_user($introduction_code, &$user_id) {
+  $user_id = authUser($introduction_code);
   if(!$user_id) {
     return false;
-}
+  }
 
-$user = Model_Client::find($user_id);
+  $user = Model_Client::find($user_id);
 
-if(!$user) {
-  return false;
-}
+  if(!$user) {
+    return false;
+  }
 
-return true;
+  return true;
 }
 
 
@@ -202,11 +202,11 @@ function getRecCount($tablename, $key1, $key2, $key3, $key4, $status) {
   $q->where('pid', '=', $key4);
   if($status == true){
     $q->where('status', '=', $status);
-}
+  }
 
-$ret = $q->execute()->current();
+  $ret = $q->execute()->current();
 
-return $ret['cnt'];
+  return $ret['cnt'];
 }
 
 /**
@@ -219,7 +219,7 @@ function validate_remote_address($whitelist=null) {
     $whitelist = array(
       // 未定なので最初は全通
     );
-}
+  }
 
-return true;
+  return true;
 }

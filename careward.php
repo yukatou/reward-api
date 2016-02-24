@@ -68,7 +68,7 @@ try {
       ,pid
       ,action_id
       ,media_data
-      ,created_at
+      ,created
     )
     VALUES	 (
       :uid
@@ -84,7 +84,7 @@ try {
       ,:pid
       ,:action_id
       ,:media_data
-      ,:created_at
+      ,:created
     )
     _SQL
     ;
@@ -103,7 +103,7 @@ try {
     ->bind('pid', $pid)
     ->bind('action_id', $action_id)
     ->bind('media_data', $media_data)
-    ->bind('created_at', $dateval)
+    ->bind('created', $dateval)
     ->execute()
     ;
 
@@ -135,7 +135,7 @@ try {
       ,action_date
       ,pid
       ,point
-      ,created_at
+      ,created
     )
     VALUES	 (
       :uid
@@ -143,7 +143,7 @@ try {
       ,:action_date
       ,:pid
       ,:point
-      ,:created_at
+      ,:created
     )
     _SQL
     ;
@@ -155,7 +155,7 @@ try {
       ->bind('action_date', $action_date)
       ->bind('pid', $pid)
       ->bind('point', $point)
-      ->bind('created_at', $dateval)
+      ->bind('created', $dateval)
       ->execute()
       ;
 

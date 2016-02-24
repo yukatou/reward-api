@@ -59,7 +59,7 @@ try {
       ,advertisement_name
       ,point
       ,payment
-      ,created_at
+      ,created
     )
     VALUES	 (
       :identifier
@@ -70,7 +70,7 @@ try {
       ,:advertisement_name
       ,:point
       ,:payment
-      ,:created_at
+      ,:created
     )
     _SQL
     ;
@@ -84,7 +84,7 @@ try {
     ->bind('advertisement_name', $advertisement_name)
     ->bind('point', $point)
     ->bind('payment', $payment)
-    ->bind('created_at', $dateval)
+    ->bind('created', $dateval)
     ->execute()
     ;
 
@@ -116,14 +116,14 @@ try {
       ,achieve_id
       ,advertisement_id
       ,point
-      ,created_at
+      ,created
     )
     VALUES	 (
       :identifier
       ,:achieve_id
       ,:advertisement_id
       ,:point
-      ,:created_at
+      ,:created
     )
     _SQL
     ;
@@ -134,7 +134,7 @@ try {
       ->bind('achieve_id', $achieve_id)
       ->bind('advertisement_id', $advertisement_id)
       ->bind('point',      $point)
-      ->bind('created_at', $dateval)
+      ->bind('created', $dateval)
       ->execute()
       ;
 
@@ -181,7 +181,7 @@ try {
     ->where('identifier', $identifier)
     ->where('achieve_id', $achieve_id)
     ->where('advertisement_id', $advertisement_id)
-    ->where('created_at', $dateval)
+    ->where('created', $dateval)
     ->get_one();
   $Driver_Log->status = 1;
   $Driver_Log->updated_at = date('c');
